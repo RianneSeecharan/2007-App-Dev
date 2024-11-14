@@ -1,4 +1,4 @@
-name: trace_numbers_app
+name: trace_numbers_2_0
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   signature: ^5.0.0
+  flutter_tts: ^3.3.17
 
 
 
@@ -94,3 +95,5 @@ flutter:
   assets:
     - assets/chalkboard.png
   
+  
+
