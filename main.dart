@@ -1,29 +1,69 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:signature/signature.dart';
 
-// Main entry point for the app
 void main() {
-  runApp(const TraceNumbersApp());
+  runApp(const TraceApp());
 }
 
-// Root widget of the application
-class TraceNumbersApp extends StatelessWidget {
-  const TraceNumbersApp({super.key});
+class TraceApp extends StatelessWidget {
+  const TraceApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Trace Numbers',
+      title: 'Trace App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const NumbersGrid(), // Sets initial screen to the grid of numbers
+      home: const FrontPage(),
     );
   }
 }
 
-// Widget to display a grid of numbers for tracing
+class FrontPage extends StatelessWidget {
+  const FrontPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Welcome to Trace App'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NumbersGrid(),
+                  ),
+                );
+              },
+              child: const Text('Trace Numbers'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LettersGrid(),
+                  ),
+                );
+              },
+              child: const Text('Trace Letters'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// TRACE NUMBERS CODE
 class NumbersGrid extends StatefulWidget {
   const NumbersGrid({super.key});
 
@@ -31,67 +71,46 @@ class NumbersGrid extends StatefulWidget {
   NumbersGridState createState() => NumbersGridState();
 }
 
-// State class for NumbersGrid, manages unlocked numbers and speech functionality
 class NumbersGridState extends State<NumbersGrid> {
-  int unlockedNumbers = 1; // Tracks the highest unlocked number
-  FlutterTts flutterTts = FlutterTts(); // Text-to-speech object
-
-  @override
-  void initState() {
-    super.initState();
-    flutterTts.setLanguage("en-US"); // Sets TTS language to US English
-    flutterTts.setPitch(1.0); // Sets TTS pitch
-  }
-
-  // Speaks the number selected by the user
-  Future<void> speakNumber(int number) async {
-    await flutterTts.speak(" $number");
-  }
-
-  // Speaks a message when the tracing is complete
-  Future<void> speakCompletion(int number) async {
-    await flutterTts.speak("$number completed");
-  }
+  int unlockedNumbers = 1;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Write the Numbers'),
+        title: const Text('Trace Numbers'),
       ),
       body: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 5, // 5 columns in grid
-          childAspectRatio: 1, // Equal width and height for grid items
+          crossAxisCount: 5,
+          childAspectRatio: 1,
         ),
-        itemCount: 20, // Total items in the grid (0-19)
+        itemCount: 20,
         itemBuilder: (context, index) {
-          bool isUnlocked = index <= unlockedNumbers; // Check if number is unlocked
+          bool isUnlocked = index <= unlockedNumbers;
 
           return GestureDetector(
-            onTap: () async {
-              if (isUnlocked) { // If the number is unlocked
-                await speakNumber(index); // Speak the number
+            onTap: () {
+              if (isUnlocked) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => TraceScreen(
-                      number: index,
+                      text: '$index',
                       onComplete: () {
                         setState(() {
                           if (index == unlockedNumbers) {
-                            unlockedNumbers++; // Unlock the next number
+                            unlockedNumbers++;
                           }
                         });
                       },
-                      onCompletedSpeak: () => speakCompletion(index), // Speak completion message
                     ),
                   ),
                 );
               }
             },
             child: Card(
-              color: isUnlocked ? Colors.blue : Colors.grey, // Color based on unlock status
+              color: isUnlocked ? Colors.blue : Colors.grey,
               child: Center(
                 child: Text(
                   '$index',
@@ -109,29 +128,97 @@ class NumbersGridState extends State<NumbersGrid> {
   }
 }
 
-// Screen where the user can trace a specific number
+// TRACE LETTERS CODE
+class LettersGrid extends StatefulWidget {
+  const LettersGrid({super.key});
+
+  @override
+  LettersGridState createState() => LettersGridState();
+}
+
+class LettersGridState extends State<LettersGrid> {
+  int unlockedLetters = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    List<String> letters = [];
+    for (int i = 0; i < 26; i++) {
+      letters.add(String.fromCharCode(65 + i));
+      letters.add(String.fromCharCode(97 + i));
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Trace Letters'),
+      ),
+      body: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 6,
+          childAspectRatio: 1,
+        ),
+        itemCount: letters.length,
+        itemBuilder: (context, index) {
+          bool isUnlocked = index <= unlockedLetters;
+          String letter = letters[index];
+
+          return GestureDetector(
+            onTap: () {
+              if (isUnlocked) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TraceScreen(
+                      text: letter,
+                      onComplete: () {
+                        setState(() {
+                          if (index == unlockedLetters) {
+                            unlockedLetters++;
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                );
+              }
+            },
+            child: Card(
+              color: isUnlocked ? Colors.blue : Colors.grey,
+              child: Center(
+                child: Text(
+                  letter,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// COMMON TRACE SCREEN
 class TraceScreen extends StatefulWidget {
-  final int number; // The number being traced
-  final VoidCallback onComplete; // Callback to update unlocked numbers
-  final VoidCallback onCompletedSpeak; // Callback to speak completion message
+  final String text;
+  final VoidCallback onComplete;
 
   const TraceScreen({
     super.key,
-    required this.number,
+    required this.text,
     required this.onComplete,
-    required this.onCompletedSpeak,
   });
 
   @override
   _TraceScreenState createState() => _TraceScreenState();
 }
 
-// State class for TraceScreen, manages tracing and eraser functionality
 class _TraceScreenState extends State<TraceScreen> {
-  late SignatureController _controller; // Controller for drawing
-  bool isErasing = false; // Tracks if the eraser is active
+  late SignatureController _controller;
+  bool isErasing = false;
 
-  // List of pastel colors for drawing
   final List<Color> chalkColors = [
     Colors.pink[100]!,
     Colors.blue[100]!,
@@ -143,7 +230,7 @@ class _TraceScreenState extends State<TraceScreen> {
     Colors.cyan[100]!,
   ];
 
-  Color selectedChalkColor = Colors.blue; // Default chalk color
+  Color selectedChalkColor = Colors.blue;
 
   @override
   void initState() {
@@ -154,7 +241,6 @@ class _TraceScreenState extends State<TraceScreen> {
     );
   }
 
-  // Updates the drawing color and disables the eraser
   void _updateChalkColor(Color newColor) {
     setState(() {
       selectedChalkColor = newColor;
@@ -166,7 +252,6 @@ class _TraceScreenState extends State<TraceScreen> {
     });
   }
 
-  // Toggles eraser mode on and off
   void _toggleEraser() {
     setState(() {
       isErasing = !isErasing;
@@ -181,7 +266,7 @@ class _TraceScreenState extends State<TraceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Trace ${widget.number}'),
+        title: Text('Trace ${widget.text}'),
       ),
       body: Column(
         children: [
@@ -191,46 +276,25 @@ class _TraceScreenState extends State<TraceScreen> {
                 alignment: Alignment.center,
                 children: [
                   Image.asset(
-                    'assets/chalkboard.png', // Background image
+                    'assets/chalkboard.png',
                     fit: BoxFit.cover,
                   ),
                   Text(
-                    '${widget.number}', // Display the number to trace
+                    widget.text,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 150,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  // Area where the user can trace the number
-                  ClipPath(
-                    clipper: NumberClipper(widget.number), // Clipping to number shape
-                    child: ShaderMask(
-                      shaderCallback: (Rect bounds) {
-                        return RadialGradient(
-                          center: Alignment.topLeft,
-                          radius: 1.0,
-                          colors: <Color>[
-                            selectedChalkColor.withOpacity(0.6),
-                            selectedChalkColor,
-                          ],
-                          tileMode: TileMode.mirror,
-                        ).createShader(bounds);
-                      },
-                      blendMode: BlendMode.srcATop,
-                      child: Signature(
-                        controller: _controller, // Signature controller for drawing
-                        backgroundColor: Colors.transparent,
-                        height: 300,
-                        width: 300,
-                      ),
-                    ),
+                  Signature(
+                    controller: _controller,
+                    backgroundColor: Colors.transparent,
                   ),
                 ],
               ),
             ),
           ),
-          // Row of color options
           Container(
             height: 60,
             color: const Color.fromARGB(172, 0, 0, 0),
@@ -240,7 +304,7 @@ class _TraceScreenState extends State<TraceScreen> {
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
-                    _updateChalkColor(chalkColors[index]); // Select a color
+                    _updateChalkColor(chalkColors[index]);
                   },
                   child: Container(
                     width: 50,
@@ -261,7 +325,6 @@ class _TraceScreenState extends State<TraceScreen> {
               },
             ),
           ),
-          // Eraser toggle button
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
@@ -269,19 +332,16 @@ class _TraceScreenState extends State<TraceScreen> {
               child: Text(isErasing ? 'Switch to Drawing' : 'Switch to Eraser'),
             ),
           ),
-          // Complete button
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: ElevatedButton(
               onPressed: () {
                 if (_controller.isNotEmpty) {
-                  widget.onComplete(); // Unlock next number
-                  widget.onCompletedSpeak(); // Speak "number completed"
-                  Navigator.pop(context); // Return to grid
+                  widget.onComplete();
+                  Navigator.pop(context);
                 } else {
-                  // Prompt to trace the number if not yet drawn
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please trace the number')),
+                    const SnackBar(content: Text('Please trace the figure')),
                   );
                 }
               },
@@ -295,33 +355,7 @@ class _TraceScreenState extends State<TraceScreen> {
 
   @override
   void dispose() {
-    _controller.dispose(); // Dispose of the controller
+    _controller.dispose();
     super.dispose();
   }
 }
-
-// Custom clipper class to shape the drawing area around the number
-class NumberClipper extends CustomClipper<Path> {
-  final int number;
-
-  NumberClipper(this.number);
-
-  @override
-  Path getClip(Size size) {
-    Path path = Path();
-    double centerX = size.width / 2;
-    double centerY = size.height / 2;
-
-    // Radius adjusted based on the number
-    double radius = number <= 9 ? 75.0 : 90.0;
-    path.addOval(Rect.fromCircle(center: Offset(centerX, centerY), radius: radius));
-
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
-    return false; // No need to reclip as shape doesn't change
-  }
-}
-
