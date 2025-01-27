@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:signature/signature.dart';
 
 void main() {
@@ -63,7 +64,6 @@ class FrontPage extends StatelessWidget {
   }
 }
 
-// TRACE NUMBERS CODE
 class NumbersGrid extends StatefulWidget {
   const NumbersGrid({super.key});
 
@@ -73,6 +73,22 @@ class NumbersGrid extends StatefulWidget {
 
 class NumbersGridState extends State<NumbersGrid> {
   int unlockedNumbers = 1;
+  FlutterTts flutterTts = FlutterTts();
+
+  @override
+  void initState() {
+    super.initState();
+    flutterTts.setLanguage("en-US");
+    flutterTts.setPitch(1.0);
+  }
+
+  Future<void> speakNumber(int number) async {
+    await flutterTts.speak("$number");
+  }
+
+  Future<void> speakCompletion(int number) async {
+    await flutterTts.speak("$number completed");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,13 +101,14 @@ class NumbersGridState extends State<NumbersGrid> {
           crossAxisCount: 5,
           childAspectRatio: 1,
         ),
-        itemCount: 20,
+        itemCount: 21,
         itemBuilder: (context, index) {
           bool isUnlocked = index <= unlockedNumbers;
 
           return GestureDetector(
-            onTap: () {
+            onTap: () async {
               if (isUnlocked) {
+                await speakNumber(index);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -104,6 +121,7 @@ class NumbersGridState extends State<NumbersGrid> {
                           }
                         });
                       },
+                      onCompletedSpeak: () => speakCompletion(index),
                     ),
                   ),
                 );
@@ -128,7 +146,6 @@ class NumbersGridState extends State<NumbersGrid> {
   }
 }
 
-// TRACE LETTERS CODE
 class LettersGrid extends StatefulWidget {
   const LettersGrid({super.key});
 
@@ -138,6 +155,22 @@ class LettersGrid extends StatefulWidget {
 
 class LettersGridState extends State<LettersGrid> {
   int unlockedLetters = 0;
+  FlutterTts flutterTts = FlutterTts();
+
+  @override
+  void initState() {
+    super.initState();
+    flutterTts.setLanguage("en-US");
+    flutterTts.setPitch(1.0);
+  }
+
+  Future<void> speakLetter(String letter) async {
+    await flutterTts.speak(letter);
+  }
+
+  Future<void> speakCompletion(String letter) async {
+    await flutterTts.speak("$letter completed");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -162,8 +195,9 @@ class LettersGridState extends State<LettersGrid> {
           String letter = letters[index];
 
           return GestureDetector(
-            onTap: () {
+            onTap: () async {
               if (isUnlocked) {
+                await speakLetter(letter);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -176,6 +210,7 @@ class LettersGridState extends State<LettersGrid> {
                           }
                         });
                       },
+                      onCompletedSpeak: () => speakCompletion(letter),
                     ),
                   ),
                 );
@@ -200,15 +235,16 @@ class LettersGridState extends State<LettersGrid> {
   }
 }
 
-// COMMON TRACE SCREEN
 class TraceScreen extends StatefulWidget {
   final String text;
   final VoidCallback onComplete;
+  final VoidCallback onCompletedSpeak;
 
   const TraceScreen({
     super.key,
     required this.text,
     required this.onComplete,
+    required this.onCompletedSpeak,
   });
 
   @override
@@ -230,7 +266,7 @@ class _TraceScreenState extends State<TraceScreen> {
     Colors.cyan[100]!,
   ];
 
-  Color selectedChalkColor = Colors.blue;
+  Color selectedChalkColor = Colors.blue[100]!;
 
   @override
   void initState() {
@@ -338,6 +374,7 @@ class _TraceScreenState extends State<TraceScreen> {
               onPressed: () {
                 if (_controller.isNotEmpty) {
                   widget.onComplete();
+                  widget.onCompletedSpeak();
                   Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
